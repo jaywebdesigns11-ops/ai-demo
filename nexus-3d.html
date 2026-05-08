@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus AI — Enterprise Automation</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060608;
+  --text:#f0f0f8;
+  --muted:#8888a8;
+  --muted2:#4a4a68;
+  --blue:#4f9eff;
+  --violet:#8b5cf6;
+  --cyan:#22d3ee;
+  --surface:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.07);
+  --font-display:'Syne',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  overflow-x:hidden;
+}
+
+/* Canvas fixed background */
+#canvas-bg{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  z-index:0;
+  pointer-events:none;
+}
+
+/* All content sits above canvas */
+.page{position:relative;z-index:1;}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;
+  z-index:100;
+  padding:20px 56px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:all 0.5s;
+}
+nav.scrolled{
+  background:rgba(6,6,8,0.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.logo{font-family:var(--font-display);font-weight:800;font-size:20px;letter-spacing:-0.02em}
+.logo span{color:var(--blue)}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:14px;transition:color 0.2s}
+.nav-links a:hover{color:var(--text)}
+.nav-btn{
+  background:var(--blue);color:#000;
+  border:none;padding:10px 22px;border-radius:8px;
+  font-family:var(--font-body);font-size:14px;font-weight:500;
+  cursor:pointer;transition:all 0.2s;
+}
+.nav-btn:hover{background:#6aadff;transform:translateY(-1px)}
+
+/* SECTION BASE */
+section{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:120px 56px;
+  text-align:center;
+  position:relative;
+}
+.tag{
+  display:inline-block;
+  font-size:12px;color:var(--blue);
+  letter-spacing:0.12em;text-transform:uppercase;font-weight:500;
+  margin-bottom:20px;
+}
+h1,h2{
+  font-family:var(--font-display);
+  font-weight:800;
+  letter-spacing:-0.03em;
+  line-height:1.0;
+}
+h1{font-size:clamp(52px,8vw,96px);margin-bottom:28px}
+h2{font-size:clamp(36px,5vw,64px);margin-bottom:24px}
+.sub{
+  font-size:clamp(17px,2vw,22px);
+  color:var(--muted);
+  max-width:620px;
+  margin:0 auto 48px;
+  font-weight:300;
+  line-height:1.65;
+}
+.grad{
+  background:linear-gradient(90deg,var(--blue),var(--violet),var(--cyan));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+/* HERO */
+#hero{
+  min-height:100vh;
+  padding-top:120px;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(79,158,255,0.08);
+  border:1px solid rgba(79,158,255,0.2);
+  border-radius:100px;padding:6px 16px;
+  font-size:12px;color:var(--blue);
+  letter-spacing:0.08em;text-transform:uppercase;font-weight:500;
+  margin-bottom:32px;
+  animation:fadeup 1s 0.2s both;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+h1{animation:fadeup 1s 0.4s both}
+.sub{animation:fadeup 1s 0.6s both}
+.ctas{
+  display:flex;gap:16px;justify-content:center;
+  animation:fadeup 1s 0.8s both;
+}
+.btn-p{
+  background:linear-gradient(135deg,var(--blue),var(--violet));
+  color:#fff;border:none;
+  padding:16px 36px;border-radius:10px;
+  font-family:var(--font-body);font-size:16px;font-weight:500;
+  cursor:pointer;transition:all 0.3s;
+}
+.btn-p:hover{transform:translateY(-3px);box-shadow:0 20px 60px rgba(79,158,255,0.3)}
+.btn-s{
+  background:transparent;color:var(--text);
+  border:1px solid rgba(255,255,255,0.15);
+  padding:16px 36px;border-radius:10px;
+  font-family:var(--font-body);font-size:16px;font-weight:400;
+  cursor:pointer;transition:all 0.3s;
+}
+.btn-s:hover{background:rgba(255,255,255,0.05);transform:translateY(-2px)}
+.scroll-hint{
+  position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:var(--muted2);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;
+  animation:fadeup 1s 1.4s both;
+}
+.scroll-line{
+  width:1px;height:40px;
+  background:linear-gradient(var(--muted2),transparent);
+  animation:scroll-anim 2s ease-in-out infinite;
+}
+@keyframes scroll-anim{0%,100%{opacity:0.3;transform:scaleY(0.5);transform-origin:top}50%{opacity:1;transform:scaleY(1)}}
+@keyframes fadeup{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* SCROLL PANELS (pinned-style) */
+.scroll-panel{
+  min-height:100vh;
+  display:flex;align-items:center;
+  padding:100px 56px;
+  opacity:0;
+  transform:translateY(60px);
+  transition:opacity 0.8s ease, transform 0.8s ease;
+}
+.scroll-panel.visible{opacity:1;transform:translateY(0)}
+.panel-inner{
+  max-width:1200px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:100px;
+  align-items:center;
+  width:100%;
+}
+.panel-inner.reverse{direction:rtl}
+.panel-inner.reverse>*{direction:ltr}
+.panel-text{text-align:left}
+.panel-text .tag{display:block}
+.panel-text h2{text-align:left}
+.panel-text .sub{text-align:left;margin-left:0}
+.panel-visual{
+  position:relative;
+  border-radius:20px;
+  overflow:hidden;
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  aspect-ratio:4/3;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* SERVICES GRID */
+#services-sec{
+  min-height:auto;
+  padding:100px 56px;
+  display:block;
+}
+.services-wrap{max-width:1200px;margin:0 auto;text-align:center}
+.svc-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:20px;
+  margin-top:60px;
+}
+.svc-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:32px;
+  text-align:left;
+  transition:all 0.4s;
+  cursor:default;
+  opacity:0;
+  transform:translateY(30px);
+}
+.svc-card.visible{opacity:1;transform:none}
+.svc-card:hover{
+  border-color:rgba(79,158,255,0.2);
+  background:rgba(79,158,255,0.04);
+  transform:translateY(-6px);
+  box-shadow:0 32px 80px rgba(0,0,0,0.4);
+}
+.svc-icon{
+  width:48px;height:48px;border-radius:12px;
+  background:rgba(79,158,255,0.1);
+  border:1px solid rgba(79,158,255,0.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:20px;
+  transition:transform 0.3s;
+}
+.svc-card:hover .svc-icon{transform:scale(1.1) rotate(-5deg)}
+.svc-card h3{font-family:var(--font-display);font-size:18px;font-weight:700;margin-bottom:10px}
+.svc-card p{font-size:14px;color:var(--muted);line-height:1.6}
+
+/* STATS */
+#stats-sec{
+  padding:80px 56px;
+  min-height:auto;
+  display:block;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.stats-grid{
+  max-width:960px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--border);
+}
+.stat-item{
+  background:var(--bg);
+  padding:40px;text-align:center;
+  opacity:0;transform:translateY(20px);
+  transition:all 0.5s;
+}
+.stat-item.visible{opacity:1;transform:none}
+.stat-num{
+  font-family:var(--font-display);
+  font-size:48px;font-weight:800;
+  letter-spacing:-0.03em;
+  background:linear-gradient(135deg,#fff,var(--muted));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.stat-label{font-size:13px;color:var(--muted);margin-top:6px}
+
+/* TESTIMONIALS */
+#testi{padding:100px 56px;display:block;min-height:auto}
+.testi-wrap{max-width:1200px;margin:0 auto;text-align:center}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
+.testi-card{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:16px;padding:28px;text-align:left;
+  opacity:0;transform:translateY(20px);transition:all 0.5s;
+}
+.testi-card.visible{opacity:1;transform:none}
+.stars{color:#f59e0b;font-size:13px;margin-bottom:16px;letter-spacing:2px}
+.quote{font-size:14px;line-height:1.7;color:#c0c0d8;font-style:italic;margin-bottom:20px}
+.author{display:flex;align-items:center;gap:10px;padding-top:16px;border-top:1px solid var(--border)}
+.avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--violet));
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;font-family:var(--font-display);
+  flex-shrink:0;
+}
+.aname{font-size:13px;font-weight:500}
+.arole{font-size:11px;color:var(--muted)}
+
+/* PRICING */
+#pricing{padding:100px 56px;display:block;min-height:auto}
+.pricing-wrap{max-width:1000px;margin:0 auto;text-align:center}
+.p-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
+.p-card{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:20px;padding:32px;
+  opacity:0;transform:translateY(20px);transition:all 0.5s;
+  position:relative;
+}
+.p-card.visible{opacity:1;transform:none}
+.p-card.hot{
+  border-color:rgba(79,158,255,0.3);
+  background:linear-gradient(135deg,rgba(79,158,255,0.05),rgba(139,92,246,0.05));
+}
+.p-card:hover{transform:translateY(-4px)}
+.p-badge{
+  display:inline-block;font-size:11px;
+  color:var(--blue);letter-spacing:0.08em;text-transform:uppercase;
+  background:rgba(79,158,255,0.1);border:1px solid rgba(79,158,255,0.2);
+  padding:4px 12px;border-radius:100px;margin-bottom:16px;
+}
+.hot .p-badge{color:#a78bfa;background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.25)}
+.p-name{font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:6px}
+.p-desc{font-size:13px;color:var(--muted);margin-bottom:24px}
+.p-price{display:flex;align-items:baseline;gap:4px;margin-bottom:24px}
+.p-cur{font-size:18px;color:var(--muted);font-weight:300}
+.p-amt{font-family:var(--font-display);font-size:46px;font-weight:800;letter-spacing:-0.03em;line-height:1}
+.p-mo{font-size:13px;color:var(--muted)}
+.p-feats{display:flex;flex-direction:column;gap:12px;margin-bottom:28px;text-align:left}
+.p-feat{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.p-check{
+  width:16px;height:16px;border-radius:50%;
+  background:rgba(79,158,255,0.1);border:1px solid rgba(79,158,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:var(--blue);flex-shrink:0;
+}
+.p-btn{
+  width:100%;padding:13px;border-radius:10px;
+  font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;transition:all 0.3s;
+  border:1px solid rgba(255,255,255,0.12);background:transparent;color:var(--text);
+}
+.p-btn:hover{background:rgba(255,255,255,0.05);transform:translateY(-1px)}
+.hot .p-btn{
+  background:linear-gradient(135deg,var(--blue),var(--violet));
+  border:none;color:#fff;
+}
+.hot .p-btn:hover{box-shadow:0 12px 40px rgba(79,158,255,0.3)}
+
+/* FINAL CTA */
+#final-cta{
+  min-height:80vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:120px 56px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.cta-line{width:1px;height:60px;background:linear-gradient(var(--muted2),transparent);margin:0 auto 48px}
+.cta-big{
+  background:linear-gradient(135deg,var(--blue),var(--violet));
+  color:#fff;border:none;
+  padding:20px 56px;border-radius:12px;
+  font-family:var(--font-body);font-size:18px;font-weight:500;
+  cursor:pointer;transition:all 0.3s;
+}
+.cta-big:hover{transform:translateY(-3px);box-shadow:0 24px 80px rgba(79,158,255,0.4)}
+.cta-note{margin-top:16px;font-size:13px;color:var(--muted2)}
+
+/* FOOTER */
+footer{
+  background:rgba(255,255,255,0.02);
+  border-top:1px solid var(--border);
+  padding:40px 56px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.f-logo{font-family:var(--font-display);font-weight:800;font-size:18px}
+.f-logo span{color:var(--blue)}
+.f-links{display:flex;gap:24px}
+.f-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color 0.2s}
+.f-links a:hover{color:var(--text)}
+.f-copy{font-size:12px;color:var(--muted2)}
+
+/* 3D CANVAS OVERLAYS — text that appears inside the canvas sections */
+.canvas-section{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.canvas-text{
+  text-align:center;
+  position:relative;z-index:2;
+  opacity:0;transform:translateY(40px);
+  transition:all 0.9s ease;
+  pointer-events:none;
+}
+.canvas-text.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){
+  nav{padding:16px 24px}
+  .nav-links{display:none}
+  section,.scroll-panel{padding:80px 24px}
+  .panel-inner{grid-template-columns:1fr;gap:40px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .testi-grid,.p-grid,.svc-grid{grid-template-columns:1fr}
+  footer{flex-direction:column;gap:20px;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas-bg"></canvas>
+
+<div class="page">
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="logo">NEXUS<span>AI</span></div>
+  <ul class="nav-links">
+    <li><a href="#services-sec">Services</a></li>
+    <li><a href="#testi">Results</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <button class="nav-btn">Book a Call</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div>
+    <div class="hero-badge"><span class="dot"></span> Enterprise AI systems — live in 48hrs</div>
+    <h1>We build AI that<br><span class="grad">runs your business.</span></h1>
+    <p class="sub">Autonomous systems that replace entire operational workflows. Cut costs 40%. Scale infinitely. Deploy in days.</p>
+    <div class="ctas">
+      <button class="btn-p">Book a Strategy Call →</button>
+      <button class="btn-s">See How It Works</button>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- 3D SECTION 1 — PARTICLE SPHERE -->
+<div class="canvas-section" id="cs1">
+  <div class="canvas-text" id="ct1">
+    <div class="tag">Intelligence at scale</div>
+    <h2>Thousands of decisions.<br><span class="grad">Per second.</span></h2>
+    <p class="sub" style="max-width:500px">Every node you see is an AI decision being processed in real time. This is what running on Nexus looks like.</p>
+  </div>
+</div>
+
+<!-- 3D SECTION 2 — ORBIT RINGS -->
+<div class="canvas-section" id="cs2">
+  <div class="canvas-text" id="ct2">
+    <div class="tag">Connected systems</div>
+    <h2>Everything talking.<br><span class="grad">Nothing siloed.</span></h2>
+    <p class="sub" style="max-width:500px">Your CRM, ERP, support desk, and data warehouse — unified under one intelligent orchestration layer.</p>
+  </div>
+</div>
+
+<!-- STATS -->
+<section id="stats-sec">
+  <div class="stats-grid">
+    <div class="stat-item"><div class="stat-num">$2.4M</div><div class="stat-label">Avg annual savings</div></div>
+    <div class="stat-item"><div class="stat-num">312%</div><div class="stat-label">Average 90-day ROI</div></div>
+    <div class="stat-item"><div class="stat-num">48hrs</div><div class="stat-label">Deployment time</div></div>
+    <div class="stat-item"><div class="stat-num">0.02%</div><div class="stat-label">Error rate</div></div>
+  </div>
+</section>
+
+<!-- 3D SECTION 3 — DNA/HELIX -->
+<div class="canvas-section" id="cs3">
+  <div class="canvas-text" id="ct3">
+    <div class="tag">Custom-built for you</div>
+    <h2>Not a template.<br><span class="grad">Your architecture.</span></h2>
+    <p class="sub" style="max-width:520px">We study your workflows, rebuild them as autonomous AI pipelines, and hand you the keys. Every system is yours.</p>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services-sec">
+  <div class="services-wrap">
+    <div class="tag">What we build</div>
+    <h2>Systems that do the work.</h2>
+    <p class="sub">Purpose-built AI infrastructure for every critical operation.</p>
+    <div class="svc-grid">
+      <div class="svc-card"><div class="svc-icon">⚙️</div><h3>Workflow Automation</h3><p>End-to-end autonomous pipelines that handle your most complex operational tasks without human input.</p></div>
+      <div class="svc-card" style="transition-delay:0.1s"><div class="svc-icon">🤖</div><h3>Custom AI Agents</h3><p>Purpose-built agents trained on your data that reason, act, and escalate exactly like a top employee.</p></div>
+      <div class="svc-card" style="transition-delay:0.2s"><div class="svc-icon">📊</div><h3>CRM Automation</h3><p>Intelligent lead scoring, automated nurture sequences, and pipeline management that closes deals 24/7.</p></div>
+      <div class="svc-card" style="transition-delay:0.3s"><div class="svc-icon">💬</div><h3>AI Support Systems</h3><p>Resolve 80% of tickets autonomously with seamless escalation for edge cases. 97% satisfaction rate.</p></div>
+      <div class="svc-card" style="transition-delay:0.4s"><div class="svc-icon">📡</div><h3>Live Intelligence</h3><p>Real-time dashboards pulling from every system. Executive decisions backed by live data, not old reports.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3D SECTION 4 — GRID WAVE -->
+<div class="canvas-section" id="cs4">
+  <div class="canvas-text" id="ct4">
+    <div class="tag">The ROI is real</div>
+    <h2>Your competitors are<br><span class="grad">already deploying this.</span></h2>
+    <p class="sub" style="max-width:500px">Every month you wait is margin left on the table. The companies winning right now are the ones who automated first.</p>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<section id="testi">
+  <div class="testi-wrap">
+    <div class="tag">What clients say</div>
+    <h2>Skeptics become believers.</h2>
+    <div class="testi-grid">
+      <div class="testi-card"><div class="stars">★★★★★</div><p class="quote">"I was skeptical. We had tried AI vendors before and got burned. Nexus delivered a working system in 48 hours that we're still running 14 months later."</p><div class="author"><div class="avatar">MR</div><div><div class="aname">Marcus Reynolds</div><div class="arole">COO · Meridian Group</div></div></div></div>
+      <div class="testi-card" style="transition-delay:0.15s"><div class="stars">★★★★★</div><p class="quote">"The ROI math was almost embarrassing. We paid for a year of the platform in the first six weeks. Our CFO asked why we didn't do this sooner."</p><div class="author"><div class="avatar">SL</div><div><div class="aname">Sophia Laurent</div><div class="arole">VP Operations · Vantage Corp</div></div></div></div>
+      <div class="testi-card" style="transition-delay:0.3s"><div class="stars">★★★★★</div><p class="quote">"These aren't chatbots. They built actual autonomous systems that think, act, and report. The most transformative thing we've done in a decade."</p><div class="author"><div class="avatar">DK</div><div><div class="aname">David Kim</div><div class="arole">CEO · Apex Systems</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="pricing-wrap">
+    <div class="tag">Investment</div>
+    <h2>Straightforward pricing.<br>Extraordinary returns.</h2>
+    <div class="p-grid">
+      <div class="p-card"><div class="p-badge">Starter</div><div class="p-name">Launch</div><p class="p-desc">One system to prove the model.</p><div class="p-price"><span class="p-cur">$</span><span class="p-amt">4,500</span><span class="p-mo">/mo</span></div><div class="p-feats"><div class="p-feat"><div class="p-check">✓</div>1 custom AI workflow</div><div class="p-feat"><div class="p-check">✓</div>Basic dashboard</div><div class="p-feat"><div class="p-check">✓</div>Email support</div><div class="p-feat"><div class="p-check">✓</div>30-day onboarding</div></div><button class="p-btn">Get started</button></div>
+      <div class="p-card hot" style="transition-delay:0.15s"><div class="p-badge">Most Popular</div><div class="p-name">Growth</div><p class="p-desc">Full stack for scaling teams.</p><div class="p-price"><span class="p-cur">$</span><span class="p-amt">12,000</span><span class="p-mo">/mo</span></div><div class="p-feats"><div class="p-feat"><div class="p-check">✓</div>Up to 5 AI workflows</div><div class="p-feat"><div class="p-check">✓</div>Custom AI agents</div><div class="p-feat"><div class="p-check">✓</div>Full control dashboard</div><div class="p-feat"><div class="p-check">✓</div>Dedicated success manager</div><div class="p-feat"><div class="p-check">✓</div>Weekly strategy sessions</div></div><button class="p-btn">Book a strategy call</button></div>
+      <div class="p-card" style="transition-delay:0.3s"><div class="p-badge">Enterprise</div><div class="p-name">Scale</div><p class="p-desc">Unlimited AI infrastructure.</p><div class="p-price"><span class="p-amt" style="font-size:38px">Custom</span></div><div class="p-feats"><div class="p-feat"><div class="p-check">✓</div>Unlimited workflows</div><div class="p-feat"><div class="p-check">✓</div>White-label option</div><div class="p-feat"><div class="p-check">✓</div>On-site deployment</div><div class="p-feat"><div class="p-check">✓</div>24/7 dedicated support</div></div><button class="p-btn">Contact sales</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="final-cta">
+  <div style="position:relative;z-index:2">
+    <div class="cta-line"></div>
+    <div class="tag">The decision</div>
+    <h2 style="font-size:clamp(40px,6vw,80px);max-width:700px;margin:0 auto 24px">Ready to automate<br>your entire business?</h2>
+    <p class="sub">Book a 30-minute strategy call. We'll show you which workflows to automate first, ROI projections, and deployment timeline.</p>
+    <button class="cta-big">Book Your Free Strategy Call →</button>
+    <p class="cta-note">No commitment. No pitch deck. Just clarity.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="f-logo">NEXUS<span>AI</span></div>
+  <div class="f-links">
+    <a href="#">Services</a>
+    <a href="#">Results</a>
+    <a href="#">Pricing</a>
+    <a href="#">About</a>
+    <a href="#">Privacy</a>
+  </div>
+  <div class="f-copy">© 2025 Nexus AI Systems</div>
+</footer>
+
+</div><!-- .page -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// =========================================
+// THREE.JS SCROLL-DRIVEN 3D BACKGROUND
+// =========================================
+const W=window.innerWidth,H=window.innerHeight;
+const canvas=document.getElementById('canvas-bg');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(W,H);
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(60,W/H,0.1,1000);
+camera.position.set(0,0,5);
+
+// Clock
+const clock=new THREE.Clock();
+
+// ---- SCENE 1: Neural particle network ----
+const sc1=new THREE.Group();
+const PCOUNT=800;
+const posArr=new Float32Array(PCOUNT*3);
+const velArr=[];
+for(let i=0;i<PCOUNT;i++){
+  const r=2+Math.random()*1.5;
+  const theta=Math.random()*Math.PI*2;
+  const phi=Math.acos(2*Math.random()-1);
+  posArr[i*3]=r*Math.sin(phi)*Math.cos(theta);
+  posArr[i*3+1]=r*Math.sin(phi)*Math.sin(theta);
+  posArr[i*3+2]=r*Math.cos(phi);
+  velArr.push(new THREE.Vector3((Math.random()-0.5)*0.003,(Math.random()-0.5)*0.003,(Math.random()-0.5)*0.003));
+}
+const pGeo=new THREE.BufferGeometry();
+pGeo.setAttribute('position',new THREE.BufferAttribute(posArr,3));
+const pMat=new THREE.PointsMaterial({color:0x4f9eff,size:0.035,transparent:true,opacity:0.8});
+const particles=new THREE.Points(pGeo,pMat);
+sc1.add(particles);
+
+// Connection lines for nearby particles
+const lineGeo=new THREE.BufferGeometry();
+const linePos=[];
+const threshold=0.9;
+for(let i=0;i<Math.min(PCOUNT,200);i++){
+  for(let j=i+1;j<Math.min(PCOUNT,200);j++){
+    const dx=posArr[i*3]-posArr[j*3];
+    const dy=posArr[i*3+1]-posArr[j*3+1];
+    const dz=posArr[i*3+2]-posArr[j*3+2];
+    const d=Math.sqrt(dx*dx+dy*dy+dz*dz);
+    if(d<threshold){
+      linePos.push(posArr[i*3],posArr[i*3+1],posArr[i*3+2]);
+      linePos.push(posArr[j*3],posArr[j*3+1],posArr[j*3+2]);
+    }
+  }
+}
+lineGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(linePos),3));
+const lineMat=new THREE.LineBasicMaterial({color:0x4f9eff,transparent:true,opacity:0.12});
+const lines=new THREE.LineSegments(lineGeo,lineMat);
+sc1.add(lines);
+scene.add(sc1);
+
+// ---- SCENE 2: Orbit rings ----
+const sc2=new THREE.Group();
+const ringColors=[0x4f9eff,0x8b5cf6,0x22d3ee,0x4f9eff];
+for(let i=0;i<4;i++){
+  const geo=new THREE.TorusGeometry(1.2+i*0.5,0.008,16,120);
+  const mat=new THREE.MeshBasicMaterial({color:ringColors[i],transparent:true,opacity:0.4-i*0.07});
+  const ring=new THREE.Mesh(geo,mat);
+  ring.rotation.x=Math.random()*Math.PI;
+  ring.rotation.y=Math.random()*Math.PI;
+  sc2.add(ring);
+  // dots on ring
+  const dcount=12+i*6;
+  for(let d=0;d<dcount;d++){
+    const angle=(d/dcount)*Math.PI*2;
+    const r=1.2+i*0.5;
+    const dGeo=new THREE.SphereGeometry(0.035,8,8);
+    const dMat=new THREE.MeshBasicMaterial({color:ringColors[i]});
+    const dot=new THREE.Mesh(dGeo,dMat);
+    dot.position.set(r*Math.cos(angle),r*Math.sin(angle),0);
+    dot.userData={ring:i,angle,speed:0.003+i*0.0015};
+    ring.add(dot);
+  }
+}
+// central sphere
+const cGeo=new THREE.SphereGeometry(0.25,32,32);
+const cMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.9});
+const centerSphere=new THREE.Mesh(cGeo,cMat);
+sc2.add(centerSphere);
+sc2.visible=false;
+scene.add(sc2);
+
+// ---- SCENE 3: DNA helix ----
+const sc3=new THREE.Group();
+const HELIX_POINTS=100;
+for(let i=0;i<HELIX_POINTS;i++){
+  const t=i/HELIX_POINTS;
+  const angle=t*Math.PI*8;
+  const y=(t-0.5)*6;
+  const r=1.2;
+  // strand 1
+  const g1=new THREE.SphereGeometry(0.06,12,12);
+  const m1=new THREE.MeshBasicMaterial({color:0x4f9eff,transparent:true,opacity:0.9});
+  const s1=new THREE.Mesh(g1,m1);
+  s1.position.set(r*Math.cos(angle),y,r*Math.sin(angle));
+  sc3.add(s1);
+  // strand 2
+  const m2=new THREE.MeshBasicMaterial({color:0x8b5cf6,transparent:true,opacity:0.9});
+  const s2=new THREE.Mesh(g1.clone(),m2);
+  s2.position.set(r*Math.cos(angle+Math.PI),y,r*Math.sin(angle+Math.PI));
+  sc3.add(s2);
+  // rungs
+  if(i%5===0){
+    const rGeo=new THREE.CylinderGeometry(0.008,0.008,r*2,6);
+    const rMat=new THREE.MeshBasicMaterial({color:0x22d3ee,transparent:true,opacity:0.3});
+    const rung=new THREE.Mesh(rGeo,rMat);
+    rung.position.set(0,y,0);
+    rung.rotation.z=Math.PI/2;
+    rung.rotation.y=angle;
+    sc3.add(rung);
+  }
+}
+sc3.visible=false;
+scene.add(sc3);
+
+// ---- SCENE 4: Grid wave ----
+const sc4=new THREE.Group();
+const GRID=40;
+const gridVerts=[];
+const gridIdx=[];
+const gridOffsetsArr=[];
+for(let i=0;i<GRID;i++){
+  for(let j=0;j<GRID;j++){
+    gridVerts.push((i-GRID/2)*0.18,0,(j-GRID/2)*0.18);
+    gridOffsetsArr.push(i,j);
+  }
+}
+for(let i=0;i<GRID-1;i++){
+  for(let j=0;j<GRID-1;j++){
+    const a=i*GRID+j;
+    gridIdx.push(a,a+1,a+GRID,a+1,a+GRID+1,a+GRID);
+  }
+}
+const gGeo=new THREE.BufferGeometry();
+const gPosAttr=new THREE.BufferAttribute(new Float32Array(gridVerts),3);
+gPosAttr.setUsage(THREE.DynamicDrawUsage);
+gGeo.setAttribute('position',gPosAttr);
+gGeo.setIndex(gridIdx);
+const gMat=new THREE.MeshBasicMaterial({color:0x4f9eff,transparent:true,opacity:0.25,wireframe:true});
+const gridMesh=new THREE.Mesh(gGeo,gMat);
+gridMesh.rotation.x=-0.3;
+sc4.add(gridMesh);
+sc4.visible=false;
+scene.add(sc4);
+
+// =========================================
+// SCROLL SYSTEM
+// =========================================
+let scrollY=0;
+let targetScrollY=0;
+window.addEventListener('scroll',()=>{targetScrollY=window.scrollY});
+
+function getSceneForScroll(sy){
+  const vh=window.innerHeight;
+  const cs1top=document.getElementById('cs1').offsetTop;
+  const cs2top=document.getElementById('cs2').offsetTop;
+  const cs3top=document.getElementById('cs3').offsetTop;
+  const cs4top=document.getElementById('cs4').offsetTop;
+
+  if(sy<cs1top-vh*0.5) return {scene:0,t:0};
+  if(sy<cs2top-vh*0.5){
+    const t=Math.max(0,Math.min(1,(sy-(cs1top-vh*0.5))/vh));
+    return {scene:1,t};
+  }
+  if(sy<cs3top-vh*0.5){
+    const t=Math.max(0,Math.min(1,(sy-(cs2top-vh*0.5))/vh));
+    return {scene:2,t};
+  }
+  if(sy<cs4top+vh){
+    const t=Math.max(0,Math.min(1,(sy-(cs3top-vh*0.5))/vh));
+    return {scene:3,t};
+  }
+  const t=Math.max(0,Math.min(1,(sy-(cs4top-vh*0.5))/vh));
+  return {scene:4,t};
+}
+
+// =========================================
+// INTERSECTION OBSERVERS
+// =========================================
+const revObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+    }
+  });
+},{threshold:0.15});
+
+document.querySelectorAll('.canvas-text,.svc-card,.stat-item,.testi-card,.p-card').forEach(el=>revObs.observe(el));
+
+// =========================================
+// ANIMATE LOOP
+// =========================================
+let currentScene=0;
+let sceneAlpha=1;
+
+function lerp(a,b,t){return a+(b-a)*t}
+
+renderer.setAnimationLoop(()=>{
+  scrollY=lerp(scrollY,targetScrollY,0.08);
+  const elapsed=clock.getElapsedTime();
+  const {scene:sIdx,t}=getSceneForScroll(scrollY);
+
+  // Fade between scenes
+  sc1.visible=true; sc2.visible=true; sc3.visible=true; sc4.visible=true;
+
+  // Scene 0: idle/hero — just show particles faint
+  // Scene 1: particles bright
+  // Scene 2: rings
+  // Scene 3: helix
+  // Scene 4: grid wave
+
+  const s0alpha=sIdx===0?1:sIdx===1?Math.max(0,1-t):0;
+  const s1alpha=sIdx===1?t:sIdx===2?Math.max(0,1-t):0;
+  const s2alpha=sIdx===2?t:sIdx===3?Math.max(0,1-t):0;
+  const s3alpha=sIdx===3?t:sIdx===4?Math.max(0,1-t):0;
+  const s4alpha=sIdx===4?t:0;
+
+  const totalParticleAlpha=s0alpha*0.3+s1alpha*0.9;
+  pMat.opacity=totalParticleAlpha;
+  lineMat.opacity=totalParticleAlpha*0.18;
+  sc1.rotation.y=elapsed*0.08;
+  sc1.rotation.x=elapsed*0.04;
+
+  // ring rotation
+  sc2.children.forEach((child,i)=>{
+    if(child.isMesh&&child.geometry.type==='TorusGeometry'){
+      child.rotation.z+=0.003+i*0.001;
+      child.rotation.x+=0.002;
+    }
+  });
+  sc2.children.forEach(c=>{
+    if(c.material){
+      if(c.material.opacity!==undefined){
+        c.material.opacity=c.material.userData.baseOp||c.material.opacity;
+      }
+    }
+  });
+  // set ring group alpha
+  sc2.traverse(o=>{
+    if(o.material&&o.material.transparent){
+      const base=o.geometry&&o.geometry.type==='TorusGeometry'?0.4:0.9;
+      o.material.opacity=base*s2alpha;
+    }
+  });
+  sc2.rotation.y=elapsed*0.1;
+
+  // helix
+  sc3.rotation.y=elapsed*0.15;
+  sc3.traverse(o=>{
+    if(o.material&&o.material.transparent){
+      const base=o.material.color.b>0.5?0.9:0.3;
+      o.material.opacity=base*s3alpha;
+    }
+  });
+
+  // grid wave
+  const pos=gGeo.attributes.position;
+  for(let i=0;i<GRID;i++){
+    for(let j=0;j<GRID;j++){
+      const idx2=(i*GRID+j);
+      const x=gridOffsetsArr[idx2*2];
+      const z=gridOffsetsArr[idx2*2+1];
+      const wave=Math.sin(x*0.4+elapsed*1.5)*Math.cos(z*0.4+elapsed*1.2)*0.4;
+      pos.setY(idx2,wave);
+    }
+  }
+  pos.needsUpdate=true;
+  gMat.opacity=0.25*s4alpha;
+  sc4.rotation.y=elapsed*0.05;
+
+  // camera subtle movement
+  camera.position.x=Math.sin(elapsed*0.2)*0.3;
+  camera.position.y=Math.cos(elapsed*0.15)*0.2;
+  camera.lookAt(0,0,0);
+
+  renderer.render(scene,camera);
+});
+
+// Resize
+window.addEventListener('resize',()=>{
+  const nw=window.innerWidth,nh=window.innerHeight;
+  camera.aspect=nw/nh;
+  camera.updateProjectionMatrix();
+  renderer.setSize(nw,nh);
+});
+
+// Nav scroll
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>40);
+});
+</script>
+</body>
+</html>
